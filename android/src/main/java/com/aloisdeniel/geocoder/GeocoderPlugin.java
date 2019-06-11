@@ -186,23 +186,31 @@ public class GeocoderPlugin implements MethodCallHandler {
     private String filterAddressLine(Address address) {
         String addressLine = "";
 
-        final String postalCode = address.getPostalCode()!=null ? address.getPostalCode().trim() : "";
-        final String countryName = address.getCountryName()!=null ? address.getCountryName().trim() : "";
-        final String countryCode = address.getCountryCode()!=null ? address.getCountryCode().trim() : "";
+        final String postalCode = address.getPostalCode() != null ? address.getPostalCode().trim() : "";
+        final String countryName = address.getCountryName() != null ? address.getCountryName().trim() : "";
+        final String countryCode = address.getCountryCode() != null ? address.getCountryCode().trim() : "";
 
 
-        String[] addressTokens = address.getAddressLine(0).split(",");
+        String fullAddress = address.getAddressLine(0);
+        if (!postalCode.isEmpty()) {
+                int zipCodeIndex =
+                        fullAddress.indexOf(postalCode);
+                if (zipCodeIndex != -1 && fullAddress.charAt(zipCodeIndex - 1) == ' ' && isAlphabet(fullAddress.charAt(zipCodeIndex - 2))) {
+                    char[] addressArray = fullAddress.toCharArray();
+                    addressArray[zipCodeIndex - 1] = ',';
+                    fullAddress = new String(addressArray);
+                }
+        }
 
-        for (String token : addressTokens) {
-           /* System.out.println("Token:" + token);
-            System.out.println("__________Comparisons:_______");
-            System.out.println(postalCode + ":" + token);
-            System.out.println(countryName + ":" + token);
-            System.out.println(countryCode + ":" + token);*/
-            token = token.trim();
-            if (!token.equals(postalCode) && !token.equals(countryName) && !token.equals(countryCode)) {
-                //System.out.println("Token Added:" + token);
-                addressLine = addressLine.concat(token + ",");
+        String[] addressTokens = fullAddress.split(",");
+
+        for (String addressToken : addressTokens) {
+
+            addressToken = addressToken.trim();
+
+
+            if (!addressToken.equals(postalCode) && !addressToken.equals(countryName) && !addressToken.equals(countryCode)) {
+                addressLine = addressLine.concat(addressToken + ",");
             }
 
 
@@ -210,8 +218,11 @@ public class GeocoderPlugin implements MethodCallHandler {
 
         }
 
-        //System.out.println(addressLine.substring(0, addressLine.length() - 1));
-        return addressLine.substring(0, addressLine.length() - 1);
+        return addressLine.charAt(addressLine.length() - 1) == ',' ? addressLine.substring(0, addressLine.length() - 1) : addressLine;
+    }
+
+    boolean isAlphabet(char ch) {
+        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
     }
 }
 
