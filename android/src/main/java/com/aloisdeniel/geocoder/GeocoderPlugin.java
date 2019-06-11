@@ -184,9 +184,9 @@ public class GeocoderPlugin implements MethodCallHandler {
         String addressLine = "";
         for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
             String tmp = address.getAddressLine(i);
-            if (tmp != address.getCountryCode() && tmp != address.getCountryName() &&
-                    tmp != address.getLocality() && tmp != address.getFeatureName() &&
-                    tmp != address.getPostalCode()) {
+            if (!tmp.equals(address.getCountryCode()) && !tmp.equals(address.getCountryName()) &&
+                    !tmp.equals(address.getLocality()) && !tmp.equals(address.getFeatureName()) &&
+                    !tmp.equals(address.getPostalCode())) {
                 addressLine += tmp + ",";
             }
         }
