@@ -18,7 +18,7 @@ class AddressTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             new ErrorLabel("feature name", this.address.featureName, fontSize: 15.0, isBold: true, ),
-            new ErrorLabel("address lines", this.address.addressLine),
+            new ErrorLabel("address lines", this.address.addressLine1),
             new ErrorLabel("country name", this.address.countryName),
             new ErrorLabel("locality", this.address.locality),
             new ErrorLabel("sub-locality", this.address.subLocality),

@@ -74,7 +74,7 @@ public class GeocoderPlugin implements MethodCallHandler {
             protected Void doInBackground(Void... params) {
                 try {
                     plugin.assertPresent();
-                    List<Address> addresses = geocoder.getFromLocationName(address, 2);
+                    List<Address> addresses = geocoder.getFromLocationName(address, 3);
                     result.success(createAddressMapList(addresses));
                 } catch (IOException ex) {
                     result.error("failed", ex.toString(), null);
@@ -99,7 +99,7 @@ public class GeocoderPlugin implements MethodCallHandler {
             protected Void doInBackground(Void... params) {
                 try {
                     plugin.assertPresent();
-                    List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 2);
+                    List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 3);
                     result.success(createAddressMapList(addresses));
                 } catch (IOException ex) {
                     result.error("failed", ex.toString(), null);
@@ -161,7 +161,9 @@ public class GeocoderPlugin implements MethodCallHandler {
         result.put("subAdminArea", address.getSubAdminArea());
         result.put("addressLine", sb.toString());
         result.put("postalCode", address.getPostalCode());
-        result.put("addressLine1", getAddressFirstLine(address));
+        result.put("addressLine1", filterAddressLine(address));
+
+        System.out.println("AddressLine1:" + result.get("addressLine1"));
 
         return result;
     }
@@ -180,17 +182,35 @@ public class GeocoderPlugin implements MethodCallHandler {
         return result;
     }
 
-    String getAddressFirstLine(Address address) {
+    ///This Filters the AddressLine by excluding the PinCode, COuntry Code
+    private String filterAddressLine(Address address) {
         String addressLine = "";
-        for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-            String tmp = address.getAddressLine(i);
-            if (!tmp.equals(address.getCountryCode()) && !tmp.equals(address.getCountryName()) &&
-                    !tmp.equals(address.getLocality()) && !tmp.equals(address.getFeatureName()) &&
-                    !tmp.equals(address.getPostalCode())) {
-                addressLine += tmp + ",";
+
+        final String postalCode = address.getPostalCode()!=null ? address.getPostalCode().trim() : "";
+        final String countryName = address.getCountryName()!=null ? address.getCountryName().trim() : "";
+        final String countryCode = address.getCountryCode()!=null ? address.getCountryCode().trim() : "";
+
+
+        String[] addressTokens = address.getAddressLine(0).split(",");
+
+        for (String token : addressTokens) {
+           /* System.out.println("Token:" + token);
+            System.out.println("__________Comparisons:_______");
+            System.out.println(postalCode + ":" + token);
+            System.out.println(countryName + ":" + token);
+            System.out.println(countryCode + ":" + token);*/
+            token = token.trim();
+            if (!token.equals(postalCode) && !token.equals(countryName) && !token.equals(countryCode)) {
+                //System.out.println("Token Added:" + token);
+                addressLine = addressLine.concat(token + ",");
             }
+
+
+            //System.out.println("-----------------------------------");
+
         }
 
+        //System.out.println(addressLine.substring(0, addressLine.length() - 1));
         return addressLine.substring(0, addressLine.length() - 1);
     }
 }
