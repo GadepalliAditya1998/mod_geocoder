@@ -74,7 +74,7 @@ public class GeocoderPlugin implements MethodCallHandler {
             protected Void doInBackground(Void... params) {
                 try {
                     plugin.assertPresent();
-                    List<Address> addresses = geocoder.getFromLocationName(address, 20);
+                    List<Address> addresses = geocoder.getFromLocationName(address, 2);
                     result.success(createAddressMapList(addresses));
                 } catch (IOException ex) {
                     result.error("failed", ex.toString(), null);
@@ -99,7 +99,7 @@ public class GeocoderPlugin implements MethodCallHandler {
             protected Void doInBackground(Void... params) {
                 try {
                     plugin.assertPresent();
-                    List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 20);
+                    List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 2);
                     result.success(createAddressMapList(addresses));
                 } catch (IOException ex) {
                     result.error("failed", ex.toString(), null);
@@ -161,6 +161,7 @@ public class GeocoderPlugin implements MethodCallHandler {
         result.put("subAdminArea", address.getSubAdminArea());
         result.put("addressLine", sb.toString());
         result.put("postalCode", address.getPostalCode());
+        result.put("addressLine1", getAddressFirstLine(address));
 
         return result;
     }
@@ -177,6 +178,20 @@ public class GeocoderPlugin implements MethodCallHandler {
         }
 
         return result;
+    }
+
+    String getAddressFirstLine(Address address) {
+        String addressLine = "";
+        for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+            String tmp = address.getAddressLine(i);
+            if (tmp != address.getCountryCode() && tmp != address.getCountryName() &&
+                    tmp != address.getLocality() && tmp != address.getFeatureName() &&
+                    tmp != address.getPostalCode()) {
+                addressLine += tmp + ",";
+            }
+        }
+
+        return addressLine.substring(0, addressLine.length() - 1);
     }
 }
 
